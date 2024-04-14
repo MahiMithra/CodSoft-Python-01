@@ -1,64 +1,70 @@
-def display_tasks(tasks):
-    if not tasks:
-        print("No tasks to show!")
-    else:
-        print("Tasks:")
-        for index, (task, completed) in enumerate(tasks, start=1):
-            status = "Done" if completed else "Pending"
-            print(f"{index}. {task} [{status}]")
+import tkinter as tk
+from tkinter import messagebox
 
-def add_task(tasks):
-    task = input("Enter the new task: ")
-    tasks.append((task, False))
-    print("Task added.")
+class TodoApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title('To-Do List Application')
 
-def remove_task(tasks):
-    display_tasks(tasks)
-    if tasks:
-        task_number = int(input("Enter the task number to remove: ")) - 1
-        if 0 <= task_number < len(tasks):
-            tasks.pop(task_number)
-            print("Task removed.")
+        # Listbox to display tasks
+        self.tasks = []
+        self.listbox_tasks = tk.Listbox(root, height=15, width=50, selectmode=tk.SINGLE)
+        self.listbox_tasks.pack(pady=10)
+
+        # Entry widget to add tasks
+        self.entry_task = tk.Entry(root, width=52)
+        self.entry_task.pack()
+
+        # Frame for buttons
+        frame_buttons = tk.Frame(root)
+        frame_buttons.pack(pady=10)
+
+        # Buttons
+        self.button_add_task = tk.Button(frame_buttons, text="Add Task", command=self.add_task)
+        self.button_add_task.grid(row=0, column=0, padx=5)
+
+        self.button_delete_task = tk.Button(frame_buttons, text="Delete Task", command=self.delete_task)
+        self.button_delete_task.grid(row=0, column=1, padx=5)
+
+        self.button_mark_completed = tk.Button(frame_buttons, text="Mark Completed", command=self.mark_completed)
+        self.button_mark_completed.grid(row=0, column=2, padx=5)
+
+    def add_task(self):
+        task = self.entry_task.get()
+        if task:
+            self.tasks.append((task, False))  # Append as tuple (task, not completed)
+            self.update_task_list()
+            self.entry_task.delete(0, tk.END)
         else:
-            print("Invalid task number!")
+            messagebox.showwarning("Warning", "The task cannot be empty.")
 
-def mark_task_completed(tasks):
-    display_tasks(tasks)
-    if tasks:
-        task_number = int(input("Enter the task number to mark as completed: ")) - 1
-        if 0 <= task_number < len(tasks):
-            task, _ = tasks[task_number]
-            tasks[task_number] = (task, True)
-            print("Task marked as completed.")
-        else:
-            print("Invalid task number!")
+    def delete_task(self):
+        try:
+            task_index = self.listbox_tasks.curselection()[0]
+            del self.tasks[task_index]
+            self.update_task_list()
+        except:
+            messagebox.showwarning("Warning", "You must select a task.")
+
+    def mark_completed(self):
+        try:
+            task_index = self.listbox_tasks.curselection()[0]
+            task, completed = self.tasks[task_index]
+            self.tasks[task_index] = (task, True)
+            self.update_task_list()
+        except:
+            messagebox.showwarning("Warning", "You must select a task.")
+
+    def update_task_list(self):
+        self.listbox_tasks.delete(0, tk.END)
+        for task, completed in self.tasks:
+            task_display = task if not completed else f"{task} - Done"
+            self.listbox_tasks.insert(tk.END, task_display)
 
 def main():
-    tasks = []
-    
-    while True:
-        print("\nTo-Do List Application")
-        print("1. View Tasks")
-        print("2. Add Task")
-        print("3. Remove Task")
-        print("4. Mark Task as Completed")
-        print("5. Exit")
-        
-        choice = input("Choose an option: ")
-        
-        if choice == "1":
-            display_tasks(tasks)
-        elif choice == "2":
-            add_task(tasks)
-        elif choice == "3":
-            remove_task(tasks)
-        elif choice == "4":
-            mark_task_completed(tasks)
-        elif choice == "5":
-            print("Goodbye!")
-            break
-        else:
-            print("Invalid choice, please try again.")
+    root = tk.Tk()
+    app = TodoApp(root)
+    root.mainloop()
 
 if __name__ == "__main__":
     main()
